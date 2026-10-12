@@ -1,0 +1,7 @@
+{
+  "name": "[Official] Platform HalloHukum – Solusi Legal UMKM Indonesia",
+  "description": "HalloHukum is a digital legal service application to assist Indonesian MSMEs with business legality, contract creation, legal consultation, and professional legal advisor support, featuring HUMI, an AI Legal Agent.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
