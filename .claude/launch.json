@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "4321", "--directory", "website"],
       "port": 4321
+    },
+    {
+      "name": "app",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-https://placeholder.supabase.co} VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:-sb_publishable_placeholder} npx vite --port 5173 --strictPort"],
+      "port": 5173
     }
   ]
 }
