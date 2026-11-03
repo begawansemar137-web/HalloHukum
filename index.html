@@ -30,14 +30,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
     
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Poppins', 'sans-serif'],
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+              serif: ['"Source Serif 4"', 'Georgia', 'serif'],
             },
             colors: {
               'brand-dark': '#0F172A', // A dark navy/slate blue
@@ -62,6 +63,11 @@
     <style>
       /* Homepage banner: slide progress bar and the slow background glow */
       @keyframes hh-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      /* Page and section titles use the serif across the whole app. A serif at
+         extrabold looks heavy, so the existing bold/extrabold utilities are
+         eased to semibold on these headings only. */
+      h1, h2 { font-family: "Source Serif 4", Georgia, serif; letter-spacing: -0.01em; }
+      h1.font-bold, h1.font-extrabold, h2.font-bold, h2.font-extrabold { font-weight: 600; }
       @keyframes hh-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, -40px) scale(1.2); } }
       .prose p { margin-bottom: 1rem; }
       .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
