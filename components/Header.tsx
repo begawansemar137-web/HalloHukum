@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
 
 
   return (
-    <header className="bg-brand-light/80 backdrop-blur-md sticky top-0 z-40 w-full">
+    <header className="bg-white/85 backdrop-blur-md sticky top-0 z-40 w-full">
        {isAuthenticated && user && !user.isEmailVerified && showVerificationBanner && (
         <div className="bg-amber-100 border-b-2 border-amber-300 text-amber-800 px-4 py-2">
           <div className="container mx-auto flex items-center justify-between text-sm">
@@ -122,46 +122,46 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
           </div>
         </div>
       )}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 border-b border-slate-200">
-        <div className="flex items-center justify-between h-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 border-b border-hh-line">
+        <div className="flex items-center justify-between gap-6 h-16 lg:h-[72px]">
           <Link to="/" className="flex items-center space-x-2" aria-label="HalloHukum Homepage">
-             <div className="bg-brand-dark p-2 rounded-lg">
+             <div className="bg-hh-navy p-2 rounded-lg">
                 <Icon className={`text-brand-accent ${isLogoAnimating ? 'animate-spin-once' : ''}`}>
                     <path d="M12 22V2M2 12H22M17 2H7L2 12L7 22H17L22 12L17 2Z" />
                     <path d="M2.5 12C2.5 17.5228 7.47715 22.5 13 22.5" />
                     <path d="M21.5 12C21.5 6.47715 16.5228 1.5 11 1.5" />
                 </Icon>
              </div>
-            <span className="text-xl sm:text-2xl font-bold text-brand-dark">HalloHukum</span>
+            <span className="text-xl sm:text-2xl font-bold tracking-[-0.01em] text-hh-ink">HalloHukum</span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-6">
-            <nav className="flex items-center space-x-8" aria-label="Navigasi utama">
-              <ul className="flex items-center space-x-8">
+          <div className="hidden lg:flex items-center gap-6">
+            <nav className="flex items-center" aria-label="Navigasi utama">
+              <ul className="flex items-center gap-4 xl:gap-7 whitespace-nowrap text-sm xl:text-[15px]">
                 {/* Services Dropdown */}
                 <li className="relative" ref={servicesMenuRef}>
                   <button 
                     onClick={() => setIsServicesMenuOpen(!isServicesMenuOpen)}
-                    className="flex items-center gap-1 text-slate-600 hover:text-brand-dark font-medium transition-colors"
+                    className="flex items-center gap-1 text-hh-ink-2 hover:text-hh-indigo font-medium transition-colors"
                     aria-haspopup="true"
                     aria-expanded={isServicesMenuOpen}
                   >
                     Layanan
-                    <Icon className={`w-4 h-4 text-slate-500 transition-transform ${isServicesMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
+                    <Icon className={`w-4 h-4 text-hh-mute transition-transform ${isServicesMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
                   </button>
                   {isServicesMenuOpen && (
-                    <div className="absolute left-0 mt-2 w-64 origin-top-left bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-scaleUp">
+                    <div className="absolute left-0 mt-2 w-64 origin-top-left bg-white rounded-xl shadow-hh-2 ring-1 ring-hh-line focus:outline-none animate-scaleUp">
                       <div className="py-2">
                         {serviceNavItems.map(item => (
                           <React.Fragment key={item.name}>
                             <Link 
                               to={item.path} 
-                              className={`block px-4 py-2 text-sm ${item.isOverview ? 'font-semibold text-brand-dark' : 'text-slate-700'} hover:bg-slate-100 hover:text-brand-dark`}
+                              className={`block px-4 py-2 text-sm ${item.isOverview ? 'font-semibold text-hh-ink' : 'text-hh-ink-2'} hover:bg-hh-soft hover:text-hh-indigo`}
                               onClick={() => setIsServicesMenuOpen(false)}
                             >
                               {item.name}
                             </Link>
-                            {item.isOverview && <div className="h-px bg-slate-200 my-1 mx-2" />}
+                            {item.isOverview && <div className="h-px bg-hh-line my-1 mx-2" />}
                           </React.Fragment>
                         ))}
                       </div>
@@ -172,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
                   <li key={item.name}>
                     <Link 
                       to={item.path} 
-                      className="text-slate-600 hover:text-brand-dark font-medium transition-colors"
+                      className="text-hh-ink-2 hover:text-hh-indigo font-medium transition-colors"
                     >
                       {item.name}
                     </Link>
@@ -180,7 +180,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
                 ))}
                  {isAuthenticated && (
                     <li>
-                        <Link to={primaryNavItem.path} className="font-semibold text-brand-secondary hover:text-sky-400 transition-colors">
+                        <Link to={primaryNavItem.path} className="font-medium text-hh-indigo hover:text-hh-indigo-press transition-colors">
                             {primaryNavItem.name}
                         </Link>
                     </li>
@@ -188,45 +188,45 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
               </ul>
             </nav>
 
-            <div className="h-6 w-px bg-slate-200"></div>
+            <div className="hidden lg:block h-6 w-px bg-hh-line"></div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               {isAuthenticated && user ? (
                  <div className="relative" ref={userMenuRef}>
-                    <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                       <div className="h-9 w-9 rounded-full bg-brand-secondary text-white flex items-center justify-center font-bold overflow-hidden">
+                    <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="flex items-center gap-2 p-1.5 rounded-full hover:bg-hh-soft transition-colors">
+                       <div className="h-9 w-9 rounded-full bg-hh-indigo text-white flex items-center justify-center font-bold overflow-hidden">
                           {user.profilePicture ? (
                             <img src={user.profilePicture} alt="Foto profil pengguna" className="h-full w-full object-cover" />
                           ) : (
                             <span>{user.name.charAt(0).toUpperCase()}</span>
                           )}
                         </div>
-                       <span className="font-semibold text-sm text-brand-dark hidden lg:inline">{user.name}</span>
-                       <Icon className={`w-4 h-4 text-slate-500 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
+                       <span className="font-semibold text-sm text-hh-ink hidden lg:inline">{user.name}</span>
+                       <Icon className={`w-4 h-4 text-hh-mute transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
                     </button>
                     {isUserMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-scaleUp">
+                        <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-hh-2 ring-1 ring-hh-line focus:outline-none animate-scaleUp">
                             <div className="py-1">
-                                <div className="px-4 py-3 border-b">
-                                    <p className="text-sm font-semibold text-brand-dark truncate">Masuk sebagai</p>
-                                    <p className="text-sm text-slate-500 truncate">{user.email}</p>
+                                <div className="px-4 py-3 border-b border-hh-line">
+                                    <p className="text-sm font-semibold text-hh-ink truncate">Masuk sebagai</p>
+                                    <p className="text-sm text-hh-mute truncate">{user.email}</p>
                                 </div>
-                                <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100" onClick={() => setIsUserMenuOpen(false)}>Profil Saya</Link>
-                                <Link to="/my-services" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100" onClick={() => setIsUserMenuOpen(false)}>Layanan Saya</Link>
-                                <a href="#" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100" onClick={e => {e.preventDefault(); handleLogout();}}>Logout</a>
+                                <Link to="/profile" className="block px-4 py-2 text-sm text-hh-ink-2 hover:bg-hh-soft hover:text-hh-indigo" onClick={() => setIsUserMenuOpen(false)}>Profil Saya</Link>
+                                <Link to="/my-services" className="block px-4 py-2 text-sm text-hh-ink-2 hover:bg-hh-soft hover:text-hh-indigo" onClick={() => setIsUserMenuOpen(false)}>Layanan Saya</Link>
+                                <a href="#" className="block px-4 py-2 text-sm text-hh-ink-2 hover:bg-hh-soft hover:text-hh-indigo" onClick={e => {e.preventDefault(); handleLogout();}}>Logout</a>
                             </div>
                         </div>
                     )}
                  </div>
               ) : (
                 <>
-                  <button onClick={handleRequestCallback} className="hidden lg:block rounded-lg text-sm font-semibold py-2.5 px-4 text-slate-700 hover:bg-slate-100 transition-colors">
+                  <button onClick={handleRequestCallback} className="hidden xl:block whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 text-hh-ink-2 hover:text-hh-indigo transition-colors">
                     Minta Dihubungi
                   </button>
-                  <button onClick={handleScheduleVideoCall} className="rounded-lg text-sm font-semibold py-2.5 px-4 bg-brand-secondary text-white hover:bg-sky-400 transition-colors">
+                  <button onClick={handleScheduleVideoCall} className="whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 bg-hh-indigo text-white hover:bg-[#4434d4] active:bg-hh-indigo-press transition-colors">
                     Jadwalkan Konsultasi
                   </button>
-                  <Link to="/login" className="rounded-lg text-sm font-semibold py-2.5 px-4 bg-brand-dark text-white hover:bg-slate-700 transition-colors">
+                  <Link to="/login" className="whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 text-hh-indigo ring-1 ring-inset ring-hh-indigo/40 hover:ring-hh-indigo transition">
                     Login/Daftar
                   </Link>
                 </>
@@ -235,13 +235,13 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
           </div>
           
           <button
-            className="md:hidden z-50"
+            className="lg:hidden z-50"
             onClick={onToggleSidebar}
             aria-label="Toggle sidebar"
             aria-expanded={isSidebarOpen}
             aria-controls="sidebar-menu"
           >
-             <Icon className="text-brand-dark w-7 h-7">
+             <Icon className="text-hh-ink w-7 h-7">
                 {isSidebarOpen ? (
                    <>
                      <line x1="18" y1="6" x2="6" y2="18"></line>

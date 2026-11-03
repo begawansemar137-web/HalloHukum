@@ -276,7 +276,7 @@ const HomePage: React.FC = () => {
       <FAQSection faqs={faqs} />
 
       {/* Closing CTA */}
-      <section className="pb-16 sm:pb-20 lg:pb-24">
+      <section className="py-16 sm:py-20 lg:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal>
             <div className="relative overflow-clip bg-hh-navy rounded-2xl px-6 py-10 sm:px-12 sm:py-14 grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
