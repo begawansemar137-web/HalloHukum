@@ -1,7 +1,7 @@
 
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
 import { servicesData } from '../data/servicesData';
@@ -26,9 +26,12 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const [isResending, setIsResending] = useState(false);
   const [isLogoAnimating, setIsLogoAnimating] = useState(true);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const servicesMenuRef = useRef<HTMLDivElement>(null);
+  const servicesMenuRef = useRef<HTMLLIElement | null>(null);
   const { isAuthenticated, user, logout, resendVerificationEmail } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const navItemRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, visible: false, animate: false });
 
   const serviceNavItems: ServiceNavItem[] = [
     { name: 'Ringkasan Layanan', path: '/layanan', isOverview: true },
@@ -47,6 +50,33 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   ];
 
   const primaryNavItem = { name: 'Mulai Sekarang', path: '/mulai' };
+
+  // The tab for the page being viewed; sub-pages (a service, a blog post) count
+  // as their section. Null on pages without a tab, such as the homepage.
+  const isUnder = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
+  const activeKey =
+    isUnder('/layanan') ? 'layanan'
+    : [...navItems, primaryNavItem].find(item => isUnder(item.path))?.path ?? null;
+
+  // Slide the indicator under the active tab. It jumps into place on first
+  // paint and only animates between tabs after that.
+  useLayoutEffect(() => {
+    const place = () => {
+      const el = activeKey ? navItemRefs.current[activeKey] : null;
+      setIndicator(prev =>
+        el
+          ? { left: el.offsetLeft, width: el.offsetWidth, visible: true, animate: prev.visible }
+          : { ...prev, visible: false, animate: true }
+      );
+    };
+    place();
+    document.fonts?.ready.then(place);
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [activeKey, isAuthenticated]);
+
+  const navLinkClass = (active: boolean) =>
+    `h-full flex items-center gap-1 font-medium transition-colors ${active ? 'text-hh-indigo' : 'text-hh-ink-2 hover:text-hh-ink'}`;
 
   const handleRequestCallback = () => {
     window.dispatchEvent(new CustomEvent('requestCallback'));
@@ -135,31 +165,43 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
             <span className="text-xl sm:text-2xl font-bold tracking-[-0.01em] text-hh-ink">HalloHukum</span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6">
-            <nav className="flex items-center" aria-label="Navigasi utama">
-              <ul className="flex items-center gap-4 xl:gap-7 whitespace-nowrap text-sm xl:text-[15px]">
+          <div className="hidden lg:flex self-stretch items-center gap-6">
+            <nav className="self-stretch flex" aria-label="Navigasi utama">
+              <ul className="relative h-full flex items-stretch gap-4 xl:gap-7 whitespace-nowrap text-sm xl:text-[15px]">
+                {/* Active-tab indicator, sitting on the header's bottom hairline */}
+                <li
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute -bottom-px left-0 h-0.5 rounded-full bg-hh-indigo origin-left ${
+                    indicator.animate ? 'transition-[transform,width,opacity] duration-300 ease-out motion-reduce:transition-none' : ''
+                  } ${indicator.visible ? 'opacity-100' : 'opacity-0'}`}
+                  style={{ width: indicator.width, transform: `translateX(${indicator.left}px)` }}
+                />
                 {/* Services Dropdown */}
-                <li className="relative" ref={servicesMenuRef}>
+                <li className="relative" ref={(el) => { servicesMenuRef.current = el; navItemRefs.current.layanan = el; }}>
                   <button 
                     onClick={() => setIsServicesMenuOpen(!isServicesMenuOpen)}
-                    className="flex items-center gap-1 text-hh-ink-2 hover:text-hh-indigo font-medium transition-colors"
+                    className={navLinkClass(activeKey === 'layanan')}
                     aria-haspopup="true"
                     aria-expanded={isServicesMenuOpen}
                   >
                     Layanan
-                    <Icon className={`w-4 h-4 text-hh-mute transition-transform ${isServicesMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
+                    <Icon className={`w-4 h-4 transition-transform ${activeKey === 'layanan' ? 'text-hh-indigo' : 'text-hh-mute'} ${isServicesMenuOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></Icon>
                   </button>
                   {isServicesMenuOpen && (
-                    <div className="absolute left-0 mt-2 w-64 origin-top-left bg-white rounded-xl shadow-hh-2 ring-1 ring-hh-line focus:outline-none animate-scaleUp">
+                    <div className="absolute left-0 top-full mt-1 w-64 origin-top-left bg-white rounded-xl shadow-hh-2 ring-1 ring-hh-line focus:outline-none animate-scaleUp">
                       <div className="py-2">
                         {serviceNavItems.map(item => (
                           <React.Fragment key={item.name}>
                             <Link 
                               to={item.path} 
-                              className={`block px-4 py-2 text-sm ${item.isOverview ? 'font-semibold text-hh-ink' : 'text-hh-ink-2'} hover:bg-hh-soft hover:text-hh-indigo`}
+                              aria-current={pathname === item.path ? 'page' : undefined}
+                              className={`flex items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-hh-soft hover:text-hh-indigo ${
+                                pathname === item.path ? 'text-hh-indigo font-semibold bg-hh-indigo-soft/60' : item.isOverview ? 'font-semibold text-hh-ink' : 'text-hh-ink-2'
+                              }`}
                               onClick={() => setIsServicesMenuOpen(false)}
                             >
                               {item.name}
+                              {pathname === item.path && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-hh-indigo" />}
                             </Link>
                             {item.isOverview && <div className="h-px bg-hh-line my-1 mx-2" />}
                           </React.Fragment>
@@ -169,18 +211,23 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
                   )}
                 </li>
                 {navItems.map((item) => (
-                  <li key={item.name}>
+                  <li key={item.name} ref={(el) => { navItemRefs.current[item.path] = el; }}>
                     <Link 
                       to={item.path} 
-                      className="text-hh-ink-2 hover:text-hh-indigo font-medium transition-colors"
+                      aria-current={activeKey === item.path ? 'page' : undefined}
+                      className={navLinkClass(activeKey === item.path)}
                     >
                       {item.name}
                     </Link>
                   </li>
                 ))}
                  {isAuthenticated && (
-                    <li>
-                        <Link to={primaryNavItem.path} className="font-medium text-hh-indigo hover:text-hh-indigo-press transition-colors">
+                    <li ref={(el) => { navItemRefs.current[primaryNavItem.path] = el; }}>
+                        <Link
+                          to={primaryNavItem.path}
+                          aria-current={activeKey === primaryNavItem.path ? 'page' : undefined}
+                          className="h-full flex items-center font-medium text-hh-indigo hover:text-hh-indigo-press transition-colors"
+                        >
                             {primaryNavItem.name}
                         </Link>
                     </li>

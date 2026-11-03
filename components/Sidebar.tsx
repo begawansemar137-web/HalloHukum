@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,6 +12,21 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Home only matches itself; other sections also match their sub-pages.
+  const isActive = (path: string) => (path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`));
+
+  const itemClass = (active: boolean) =>
+    `relative flex items-center gap-3 p-3 rounded-lg font-medium transition-colors ${
+      active ? 'bg-white/10 text-white' : 'text-[#c8cbe8] hover:bg-white/5 hover:text-white'
+    }`;
+  // A bar on the left edge of the active item that grows in when it becomes active.
+  const marker = (active: boolean) => (
+    <span
+      aria-hidden="true"
+      className={`absolute left-0 top-2 bottom-2 w-1 rounded-full bg-[#b9b0ff] origin-center transition-transform duration-300 ease-out motion-reduce:transition-none ${active ? 'scale-y-100' : 'scale-y-0'}`}
+    />
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -56,15 +71,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Sidebar */}
       <aside
         id="sidebar-menu"
-        className={`fixed top-0 left-0 h-full w-72 bg-brand-dark text-brand-light z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-hh-navy text-white z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         aria-label="Sidebar"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-700">
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
              <Link to="/" onClick={onClose} className="flex items-center space-x-2">
                 <div className="bg-white p-2 rounded-lg">
-                    <Icon className="text-brand-dark h-6 w-6">
+                    <Icon className="text-hh-navy h-6 w-6">
                         <path d="M12 22V2M2 12H22M17 2H7L2 12L7 22H17L22 12L17 2Z" />
                         <path d="M2.5 12C2.5 17.5228 7.47715 22.5 13 22.5" />
                         <path d="M21.5 12C21.5 6.47715 16.5228 1.5 11 1.5" />
@@ -72,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 </div>
                 <span className="text-xl font-bold text-white">HalloHukum</span>
             </Link>
-            <button onClick={onClose} aria-label="Tutup sidebar" className="p-2 text-slate-400 hover:text-white">
+            <button onClick={onClose} aria-label="Tutup sidebar" className="p-2 text-[#c8cbe8] hover:text-white">
               <Icon className="w-6 h-6"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></Icon>
             </button>
           </div>
@@ -80,16 +95,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {/* Navigation */}
           <nav className="flex-grow p-4 overflow-y-auto">
             {isAuthenticated && user && (
-              <div className="mb-6 p-3 bg-slate-700/50 rounded-lg">
+              <div className="mb-6 p-3 bg-white/5 rounded-lg">
                 <p className="text-sm font-semibold text-white truncate">{user.name}</p>
-                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                <p className="text-xs text-[#c8cbe8] truncate">{user.email}</p>
               </div>
             )}
 
             <ul className="space-y-2">
               {navItems.map(item => (
                 <li key={item.path}>
-                  <Link to={item.path} onClick={onClose} className="flex items-center gap-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white font-medium transition-colors">
+                  <Link to={item.path} onClick={onClose} aria-current={isActive(item.path) ? 'page' : undefined} className={itemClass(isActive(item.path))}>
+                    {marker(isActive(item.path))}
                     {item.icon}
                     <span>{item.name}</span>
                   </Link>
@@ -99,11 +115,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
             {isAuthenticated && (
               <>
-                <div className="my-4 h-px bg-slate-700"></div>
+                <div className="my-4 h-px bg-white/10"></div>
                 <ul className="space-y-2">
                   {userNavItems.map(item => (
                     <li key={item.path}>
-                      <Link to={item.path} onClick={onClose} className="flex items-center gap-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white font-medium transition-colors">
+                      <Link to={item.path} onClick={onClose} aria-current={isActive(item.path) ? 'page' : undefined} className={itemClass(isActive(item.path))}>
+                        {marker(isActive(item.path))}
                         {item.icon}
                         <span>{item.name}</span>
                       </Link>
@@ -115,14 +132,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-700 mt-auto">
+          <div className="p-4 border-t border-white/10 mt-auto">
             {isAuthenticated ? (
               <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 p-3 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 font-semibold transition-colors">
                 <Icon className="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></Icon>
                 <span>Logout</span>
               </button>
             ) : (
-              <Link to="/login" onClick={onClose} className="w-full flex items-center justify-center gap-3 p-3 rounded-lg bg-brand-secondary text-white hover:bg-sky-400 font-semibold transition-colors">
+              <Link to="/login" onClick={onClose} className="w-full flex items-center justify-center gap-3 p-3 rounded-full bg-white text-hh-indigo hover:bg-hh-indigo-soft font-medium transition-colors">
                 <Icon className="w-5 h-5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" /></Icon>
                 <span>Login / Daftar</span>
               </Link>
