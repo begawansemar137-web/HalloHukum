@@ -30,7 +30,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
     
     <script>
       tailwind.config = {
@@ -45,6 +45,25 @@
               'brand-light': '#F8FAFC', // Off-white
               'brand-accent': '#FBBF24', // Gold accent
               'brand-secondary': '#38BDF8', // A secondary blue accent
+              // Homepage palette, adapted from the Stripe DESIGN.md in VoltAgent/awesome-design-md
+              hh: {
+                indigo: '#533afd',       // filled CTA pills and links only
+                'indigo-press': '#2e2b8c',
+                'indigo-soft': '#ecebff',
+                navy: '#1c1e54',         // dark bands and featured surfaces
+                ink: '#0d253d',          // body text, never pure black
+                'ink-2': '#273951',
+                mute: '#64748d',
+                soft: '#f6f9fc',         // cool off-white bands
+                cream: '#f5e9d4',        // warm interlude band
+                line: '#e3e8ee',         // 1px hairlines
+                ruby: '#ea2261',
+              },
+            },
+            boxShadow: {
+              'hh-1': '0 1px 3px rgba(0,55,112,0.08)',
+              'hh-2': '0 8px 24px rgba(0,55,112,0.08), 0 2px 6px rgba(0,55,112,0.04)',
+              'hh-3': '0 24px 60px -12px rgba(28,30,84,0.25), 0 8px 20px rgba(0,55,112,0.06)',
             },
             animation: {
               marquee: 'marquee 20s linear infinite',
@@ -69,6 +88,19 @@
       h1, h2 { font-family: "Source Serif 4", Georgia, serif; letter-spacing: -0.01em; }
       h1.font-bold, h1.font-extrabold, h2.font-bold, h2.font-extrabold { font-weight: 600; }
       @keyframes hh-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, -40px) scale(1.2); } }
+      /* Gradient mesh behind the homepage hero: cream, sherbet, lavender, indigo, ruby */
+      .hh-mesh {
+        background:
+          radial-gradient(38% 70% at 8% 55%, #f5e9d4 0%, transparent 70%),
+          radial-gradient(30% 65% at 30% 35%, #ffb38a 0%, transparent 70%),
+          radial-gradient(34% 70% at 50% 60%, #c9b8ff 0%, transparent 70%),
+          radial-gradient(36% 80% at 72% 40%, #533afd 0%, transparent 72%),
+          radial-gradient(30% 70% at 94% 55%, #ea2261 0%, transparent 70%),
+          radial-gradient(30% 60% at 85% 10%, #f96bee 0%, transparent 70%);
+        filter: blur(36px) saturate(1.05);
+      }
+      @keyframes hh-mesh-shift { from { transform: translateX(-3%) skewY(-8deg); } to { transform: translateX(3%) skewY(-8deg); } }
+      .hh-tnum { font-feature-settings: "tnum"; }
       .prose p { margin-bottom: 1rem; }
       .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
       .prose ul { list-style-type: disc; }
