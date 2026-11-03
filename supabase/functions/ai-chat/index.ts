@@ -4,6 +4,14 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // Public endpoint (anonymous visitors can use HUMI), so abuse is limited by
 // per-IP and global rate limits instead of JWT verification.
 const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.8-flash";
+// Tried in order when the primary model is overloaded or unavailable.
+const FALLBACK_MODELS = (Deno.env.get("GEMINI_FALLBACK_MODELS") ?? "gemini-flash-latest,gemini-flash-lite-latest")
+  .split(",").map((m) => m.trim()).filter(Boolean);
+const MODELS = [...new Set([MODEL, ...FALLBACK_MODELS])];
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+const REQUEST_TIMEOUT_MS = 30_000;
+const HEDGE_DELAY_MS = 8_000;
+const TOTAL_TIMEOUT_MS = 45_000;
 const IP_LIMIT_PER_HOUR = 30;
 const GLOBAL_LIMIT_PER_DAY = 3000;
 const MAX_MESSAGE = 4000;
@@ -34,6 +42,16 @@ const HUMI_PROMPT = `Anda adalah HUMI, AI Legal Agent yang ramah, profesional, d
 - **Kekayaan Intelektual (KI):** Menjawab pertanyaan dasar seputar merek dagang dan hak cipta.
 - **Masalah Hukum Umum:** Memberikan panduan awal untuk isu-isu hukum lain yang sering dihadapi UMKM.
 
+**Dasar Hukum & Kejujuran Sumber (WAJIB):**
+- Untuk pertanyaan hukum, susun isi 'responseText' dengan bagian berikut, masing-masing diawali judulnya pada baris sendiri:
+  Ringkasan: jawaban inti dalam 1-3 kalimat.
+  Dasar hukum: nama peraturan yang relevan (jenis, nomor, tahun, dan judulnya), lalu statusnya sepengetahuan Anda (berlaku, diubah oleh peraturan tertentu, atau dicabut). Sebutkan pasal hanya jika Anda yakin.
+  Langkah berikutnya: hal praktis yang bisa dilakukan pengguna.
+- Jika Anda tidak yakin peraturan atau pasalnya, katakan terus terang bahwa dasar hukumnya perlu dipastikan, dan sarankan memeriksa peraturan.go.id atau JDIH instansi terkait. JANGAN PERNAH mengarang nomor pasal, judul peraturan, atau kutipan.
+- Sebutkan asumsi yang Anda pakai bila informasi dari pengguna belum lengkap (misalnya jenis usaha atau skala usaha).
+- Untuk kasus berisiko tinggi (sengketa di pengadilan, pidana, somasi, PHK, nilai kerugian besar), jelaskan bahwa kasus ini perlu ditangani advokat dan sarankan layanan "legal-advisor-on-demand".
+- Tulis teks biasa tanpa format markdown (jangan memakai tanda bintang, pagar, atau tabel). Gunakan baris baru untuk memisahkan bagian, dan tanda "-" untuk daftar.
+
 **Struktur Respons & Aturan Fungsional (WAJIB DIIKUTI):**
 - Respons Anda HARUS SELALU dalam format JSON yang valid.
 - Jika permintaan pengguna secara jelas mengarah pada salah satu layanan inti kami, sertakan 'suggestedServiceSlug' yang sesuai dalam respons JSON Anda.
@@ -53,7 +71,7 @@ const HUMI_PROMPT = `Anda adalah HUMI, AI Legal Agent yang ramah, profesional, d
 - **Respons JSON Anda:** 
   \`\`\`json
   {
-    "responseText": "Tentu, Bapak/Ibu. Mendirikan PT adalah langkah yang sangat baik untuk melindungi aset pribadi dan meningkatkan profesionalisme. Secara garis besar, prosesnya meliputi...",
+    "responseText": "Ringkasan:\\nTentu, Bapak/Ibu. PT didirikan dengan akta notaris lalu disahkan Kementerian Hukum, kemudian NIB diurus melalui OSS.\\n\\nDasar hukum:\\n- UU No. 40 Tahun 2007 tentang Perseroan Terbatas, sebagaimana diubah melalui UU Cipta Kerja (berlaku)\\n\\nLangkah berikutnya:\\n- Siapkan nama PT, modal, dan susunan pemegang saham...",
     "suggestedServiceSlug": "legalitas-usaha"
   }
   \`\`\`
@@ -122,6 +140,69 @@ async function hit(bucket: string, windowMs: number): Promise<number> {
   return data as number;
 }
 
+// One model, retried once if it answers with an overload error.
+async function tryModel(model: string, key: string, body: string, signal: AbortSignal): Promise<any | null> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body,
+        signal: AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]),
+      });
+    } catch (e) {
+      if (!signal.aborted) console.error("gemini request failed", model, String(e));
+      return null;
+    }
+    if (res.ok) {
+      const out = await res.json();
+      if (out?.candidates?.[0]?.content?.parts?.[0]?.text) return out;
+      console.error("gemini empty response", model, out?.candidates?.[0]?.finishReason ?? out?.promptFeedback?.blockReason);
+      return null;
+    }
+    console.error("gemini error", model, res.status, (await res.text()).slice(0, 300));
+    if (!RETRYABLE.has(res.status) || attempt === 1 || signal.aborted) return null;
+    await new Promise((r) => setTimeout(r, 500 + Math.random() * 500));
+  }
+  return null;
+}
+
+// Hedged call across the model list: the next model starts when the current
+// one fails, or when it has been silent for HEDGE_DELAY_MS. The first good
+// answer wins and the other requests are cancelled. Null when all failed.
+function generate(key: string, body: string): Promise<any | null> {
+  const ctrl = new AbortController();
+  return new Promise((resolve) => {
+    let next = 0, failed = 0, done = false;
+    let hedge: ReturnType<typeof setTimeout> | undefined;
+    const finish = (out: any | null) => {
+      if (done) return;
+      done = true;
+      clearTimeout(hedge);
+      clearTimeout(cap);
+      ctrl.abort();
+      resolve(out);
+    };
+    const launch = () => {
+      if (done || next >= MODELS.length) return;
+      const model = MODELS[next++];
+      clearTimeout(hedge);
+      hedge = setTimeout(launch, HEDGE_DELAY_MS);
+      tryModel(model, key, body, ctrl.signal).then((out) => {
+        if (out) {
+          if (model !== MODEL) console.log("gemini fallback used", model);
+          return finish(out);
+        }
+        if (++failed === MODELS.length) return finish(null);
+        launch();
+      });
+    };
+    const cap = setTimeout(() => finish(null), TOTAL_TIMEOUT_MS);
+    launch();
+  });
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -163,24 +244,16 @@ Deno.serve(async (req: Request) => {
   };
   if (mode === "humi") properties.suggestedServiceSlug = { type: "STRING", enum: SLUGS };
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: mode === "humi" ? HUMI_PROMPT : ADVISOR_PROMPT }] },
-      contents: [...hist, { role: "user", parts }],
-      generationConfig: {
-        temperature: mode === "humi" ? 0.7 : 0.5,
-        responseMimeType: "application/json",
-        responseSchema: { type: "OBJECT", properties, required: ["responseText"] },
-      },
-    }),
-  });
-  if (!res.ok) {
-    console.error("gemini error", res.status, await res.text());
-    return json({ error: "upstream" }, 502);
-  }
-  const out = await res.json();
+  const out = await generate(key, JSON.stringify({
+    systemInstruction: { parts: [{ text: mode === "humi" ? HUMI_PROMPT : ADVISOR_PROMPT }] },
+    contents: [...hist, { role: "user", parts }],
+    generationConfig: {
+      temperature: mode === "humi" ? 0.4 : 0.5,
+      responseMimeType: "application/json",
+      responseSchema: { type: "OBJECT", properties, required: ["responseText"] },
+    },
+  }));
+  if (!out) return json({ error: "upstream" }, 502);
   const raw: string = out?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   let text = raw, slug: string | null = null;
   try {
