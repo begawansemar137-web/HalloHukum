@@ -13,19 +13,16 @@ interface MapProps {
   lng: number;
 }
 
+// Optional. Without a key the component falls back to Google's keyless embed.
+const mapsApiKey: string | undefined = ((import.meta as any).env ?? {}).VITE_GOOGLE_MAPS_API_KEY;
+
 const Map: React.FC<MapProps> = ({ lat, lng }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isApiLoaded, setApiLoaded] = useState(!!(window.google && window.google.maps));
 
   // Effect for loading the Google Maps script
   useEffect(() => {
-    if (isApiLoaded) return;
-    
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      console.error("Google Maps API key is not configured. Please set the API_KEY environment variable.");
-      return;
-    }
+    if (isApiLoaded || !mapsApiKey) return;
 
     // Define the callback function on the window object
     window.initMap = () => {
@@ -34,7 +31,7 @@ const Map: React.FC<MapProps> = ({ lat, lng }) => {
     
     // Create and append the script tag
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(mapsApiKey)}&callback=initMap`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
@@ -94,6 +91,18 @@ const Map: React.FC<MapProps> = ({ lat, lng }) => {
       });
     }
   }, [isApiLoaded, lat, lng]);
+
+  if (!mapsApiKey && !isApiLoaded) {
+    return (
+      <iframe
+        title="Peta lokasi kantor HalloHukum"
+        src={`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
+        className="h-80 w-full rounded-2xl shadow-md border-0"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    );
+  }
 
   return (
     <div 
