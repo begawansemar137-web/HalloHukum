@@ -1,83 +1,111 @@
 import React from 'react';
 import Icon from './Icon';
 
-const PricingCard: React.FC<{ plan: string; price: string; description: string; features: string[]; popular?: boolean; buttonText?: string }> = ({ plan, price, description, features, popular = false, buttonText = "Pilih Paket" }) => {
-  const popularClasses = popular
-    ? 'border-brand-secondary ring-2 ring-brand-secondary'
-    : 'border-slate-200';
-  const buttonClasses = popular
-    ? 'bg-brand-secondary text-white hover:bg-sky-400'
-    : 'bg-brand-dark text-white hover:bg-slate-700';
+interface Plan {
+  name: string;
+  // Paid plans show "Mulai dari" above the price; Gratis and Custom carry their own caption
+  price: string;
+  caption: string;
+  description: string;
+  features: string[];
+  buttonText: string;
+  popular?: boolean;
+}
 
-  const finalButtonClasses = plan === 'Starter' 
-    ? 'bg-white text-brand-dark ring-1 ring-brand-dark hover:bg-slate-100' 
-    : buttonClasses;
-    
-  return (
-    <div className={`rounded-2xl p-8 bg-white border ${popularClasses} flex flex-col h-full relative`}>
-      {popular && <span className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-secondary text-white text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">Paling Populer</span>}
-      <h3 className="text-2xl font-bold text-brand-dark">{plan}</h3>
-      <p className="text-slate-500 mt-2 min-h-[3rem]">{description}</p>
-      <div className="mt-6">
-        <span className="text-4xl font-extrabold text-brand-dark">{price}</span>
-        {price !== 'Gratis' && price !== 'Custom' && <span className="text-slate-500"> / bulan</span>}
-      </div>
-      <ul className="mt-8 space-y-4 text-slate-600 flex-grow">
-        {features.map((feature, i) => (
-          <li key={i} className="flex items-start">
-            <Icon className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"></polyline></Icon>
-            <span className="text-sm">{feature}</span>
-          </li>
-        ))}
-      </ul>
-      <button className={`w-full mt-10 rounded-lg text-sm font-semibold py-3 px-4 transition-colors ${finalButtonClasses}`}>
-        {buttonText}
-      </button>
+const plans: Plan[] = [
+  {
+    name: 'Starter',
+    price: 'Gratis',
+    caption: 'Tanpa biaya',
+    description: 'Untuk individu atau bisnis yang baru ingin mencoba fitur dasar.',
+    features: ['Akses HUMI AI Agent (terbatas)', '1 template dokumen gratis', 'Newsletter edukasi hukum', 'Akses penuh ke artikel blog'],
+    buttonText: 'Mulai gratis',
+  },
+  {
+    name: 'Basic',
+    price: 'Rp499.000',
+    caption: 'Mulai dari',
+    description: 'Untuk UMKM yang baru mulai dan butuh legalitas dasar.',
+    features: ['Semua fitur Starter', 'Pendirian PT Perorangan', 'Konsultasi Human Advisor (5 sesi)', 'Pustaka template dokumen dasar'],
+    buttonText: 'Pilih Basic',
+  },
+  {
+    name: 'Pro',
+    price: 'Rp1.200.000',
+    caption: 'Mulai dari',
+    description: 'Untuk bisnis yang berkembang dan butuh dukungan legal berkelanjutan.',
+    features: ['Semua fitur Basic', 'Pendirian PT atau CV', 'Konsultasi Human Advisor tanpa batas', 'Review dokumen dan kontrak (3 dokumen)', 'Pendaftaran merek dagang (1 kelas)'],
+    buttonText: 'Pilih Pro',
+    popular: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    caption: 'Sesuai kebutuhan',
+    description: 'Solusi legal menyeluruh untuk skala bisnis yang lebih besar.',
+    features: ['Semua fitur Pro', 'Legal retainer', 'Manajemen kekayaan intelektual', 'Dukungan sengketa bisnis', 'Prioritas layanan tertinggi'],
+    buttonText: 'Hubungi sales',
+  },
+];
+
+const PricingCard: React.FC<{ plan: Plan }> = ({ plan }) => (
+  <div
+    className={`relative flex h-full flex-col rounded-xl bg-white p-6 xl:p-7 ${
+      plan.popular ? 'ring-2 ring-hh-indigo shadow-hh-2' : 'border border-hh-line shadow-hh-1'
+    }`}
+  >
+    {plan.popular && (
+      <span className="absolute left-6 top-0 -translate-y-1/2 whitespace-nowrap rounded-full bg-hh-indigo px-3 py-1 text-xs font-medium text-white">
+        Paling populer
+      </span>
+    )}
+    <h3 className="text-lg font-semibold text-hh-ink">{plan.name}</h3>
+    <p className="mt-2 min-h-[3.75rem] text-sm leading-relaxed text-hh-mute">{plan.description}</p>
+
+    <div className="mt-6 border-t border-hh-line pt-6">
+      <p className="text-xs text-hh-mute">{plan.caption}</p>
+      <p className="hh-tnum mt-1 text-[28px] font-semibold leading-tight tracking-[-0.02em] text-hh-ink">{plan.price}</p>
     </div>
-  );
-};
+
+    <ul className="mt-6 flex-grow space-y-3 text-sm text-hh-ink-2">
+      {plan.features.map(feature => (
+        <li key={feature} className="flex items-start gap-2.5">
+          <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-hh-indigo"><polyline points="20 6 9 17 4 12"></polyline></Icon>
+          <span>{feature}</span>
+        </li>
+      ))}
+    </ul>
+
+    <button
+      className={`mt-8 w-full rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
+        plan.popular
+          ? 'bg-hh-indigo text-white hover:bg-hh-indigo-press'
+          : 'text-hh-indigo ring-1 ring-inset ring-hh-indigo/40 hover:ring-hh-indigo'
+      }`}
+    >
+      {plan.buttonText}
+    </button>
+  </div>
+);
 
 const Pricing: React.FC = () => {
   return (
-    <section id="harga" className="py-12 sm:py-16 lg:py-24">
+    <section id="harga" className="bg-hh-soft py-16 sm:py-20 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-dark">Paket Layanan yang Fleksibel</h2>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
-            Pilih paket yang paling sesuai dengan skala dan kebutuhan bisnis Anda saat ini.
+        <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
+          <h2 className="text-3xl sm:text-4xl font-normal tracking-[-0.02em] text-hh-ink">Paket layanan yang fleksibel</h2>
+          <p className="mt-4 text-base sm:text-lg leading-relaxed text-hh-ink-2">
+            Pilih paket yang sesuai dengan skala dan kebutuhan bisnis Anda saat ini.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto items-stretch">
-          <PricingCard
-            plan="Starter"
-            price="Gratis"
-            description="Untuk individu atau bisnis yang baru ingin mencoba fitur dasar."
-            features={['Akses HUMI AI Agent (Terbatas)', '1 Template Dokumen Gratis', 'Newsletter Edukasi Hukum', 'Akses Penuh ke Artikel Blog']}
-            buttonText="Mulai Gratis"
-          />
-          <PricingCard
-            plan="Basic"
-            price="Rp 499k"
-            description="Untuk UMKM yang baru mulai dan butuh legalitas dasar."
-            features={['Semua fitur Starter', 'Pendirian Badan Usaha (PT Perorangan)', 'Konsultasi Human Advisor (5 Sesi)', 'Pustaka Template Dokumen Dasar']}
-          />
-          <div className="relative transform lg:scale-105 z-10">
-             <PricingCard
-              plan="Pro"
-              price="Rp 1.2M"
-              description="Untuk bisnis yang berkembang dan butuh dukungan legal berkelanjutan."
-              features={['Semua di paket Basic', 'Pendirian Badan Usaha (PT/CV)', 'Konsultasi Human Advisor Tanpa Batas', 'Review Dokumen & Kontrak (3/bulan)', 'Pendaftaran Merek Dagang (1 Kelas)']}
-              popular={true}
-            />
-          </div>
-          <PricingCard
-            plan="Enterprise"
-            price="Custom"
-            description="Solusi legal komprehensif untuk skala bisnis yang lebih besar."
-            features={['Semua di paket Pro', 'Legal Retainer Bulanan', 'Manajemen Kekayaan Intelektual', 'Dukungan Sengketa Bisnis', 'Prioritas Layanan Tertinggi']}
-            buttonText="Hubungi Sales"
-          />
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-5 xl:gap-6">
+          {plans.map(plan => (
+            <PricingCard key={plan.name} plan={plan} />
+          ))}
         </div>
+        <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-hh-mute">
+          Harga akhir bergantung pada lingkup pekerjaan dan biaya resmi pemerintah. Rinciannya kami sampaikan sebelum Anda membayar.
+        </p>
       </div>
     </section>
   );
