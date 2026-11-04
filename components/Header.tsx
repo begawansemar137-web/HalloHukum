@@ -46,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
     { name: 'Harga', path: '/harga' },
     { name: 'Blog', path: '/blog' },
     { name: 'FAQ', path: '/faq' },
+    { name: 'Partner', path: '/partner' },
     { name: 'Hubungi Kami', path: '/kontak' },
   ];
 
@@ -165,9 +166,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
             <span className="text-xl sm:text-2xl font-bold tracking-[-0.01em] text-hh-ink">HalloHukum</span>
           </Link>
 
-          <div className="hidden lg:flex self-stretch items-center gap-6">
+          <div className="hidden lg:flex self-stretch items-center gap-4 xl:gap-6">
             <nav className="self-stretch flex" aria-label="Navigasi utama">
-              <ul className="relative h-full flex items-stretch gap-4 xl:gap-7 whitespace-nowrap text-sm xl:text-[15px]">
+              <ul className="relative h-full flex items-stretch gap-3.5 xl:gap-6 whitespace-nowrap text-sm xl:text-[15px]">
                 {/* Active-tab indicator, sitting on the header's bottom hairline */}
                 <li
                   aria-hidden="true"
@@ -267,11 +268,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarOpen }) => {
                  </div>
               ) : (
                 <>
-                  <button onClick={handleRequestCallback} className="hidden xl:block whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 text-hh-ink-2 hover:text-hh-indigo transition-colors">
+                  <button onClick={handleRequestCallback} className="hidden 2xl:block whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 text-hh-ink-2 hover:text-hh-indigo transition-colors">
                     Minta Dihubungi
                   </button>
                   <button onClick={handleScheduleVideoCall} className="whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 bg-hh-indigo text-white hover:bg-[#4434d4] active:bg-hh-indigo-press transition-colors">
-                    Jadwalkan Konsultasi
+                    <span className="lg:hidden xl:inline">Jadwalkan </span>Konsultasi
                   </button>
                   <Link to="/login" className="whitespace-nowrap rounded-full text-sm font-medium py-2 px-4 text-hh-indigo ring-1 ring-inset ring-hh-indigo/40 hover:ring-hh-indigo transition">
                     Login/Daftar

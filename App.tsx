@@ -21,6 +21,7 @@ import PricingPage from './pages/PricingPage';
 import BlogPage from './pages/BlogPage';
 import FaqPage from './pages/FaqPage';
 import ContactPage from './pages/ContactPage';
+import PartnerPage from './pages/PartnerPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
@@ -332,6 +333,7 @@ const App: React.FC = () => {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPageWrapper />} />
           <Route path="/faq" element={<FaqPage />} />
+          <Route path="/partner" element={<PartnerPage />} />
           <Route path="/kontak" element={<ContactPage />} />
           <Route path="/syarat-ketentuan" element={<TermsPage />} />
           <Route path="/kebijakan-privasi" element={<PrivacyPage />} />
