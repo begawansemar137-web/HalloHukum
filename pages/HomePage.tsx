@@ -154,10 +154,125 @@ const Flow: React.FC = () => {
   );
 };
 
+const featureIcon = 'flex h-11 w-11 items-center justify-center rounded-xl bg-hh-indigo-soft text-hh-indigo';
+
+// The five things the platform does, in the strip under the hero
+const features: { title: string; text: string; to?: string; onClick?: () => void; icon: React.ReactNode }[] = [
+  {
+    title: 'AI Legal Assistant',
+    text: 'Tanya jawab hukum berbasis regulasi',
+    onClick: openHumiChat,
+    icon: <Icon className="w-6 h-6" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 4v4" /><circle cx="12" cy="3" r="1" /><line x1="9" y1="13" x2="9" y2="15" /><line x1="15" y1="13" x2="15" y2="15" /><path d="M2 13v2M22 13v2" /></Icon>,
+  },
+  {
+    title: 'Pembuatan Dokumen',
+    text: 'Buat dokumen hukum siap pakai',
+    to: '/layanan/pembuatan-kontrak',
+    icon: <Icon className="w-6 h-6" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="14" y2="17" /></Icon>,
+  },
+  {
+    title: 'Legalitas Usaha',
+    text: 'Panduan NIB, OSS, dan perizinan lainnya',
+    to: '/layanan/legalitas-usaha',
+    icon: <Icon className="w-6 h-6" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /><path d="M5 12v8h14v-8" /><path d="M10 20v-5h4v5" /></Icon>,
+  },
+  {
+    title: 'Konsultasi Profesional',
+    text: 'Terhubung dengan advokat dan konsultan hukum',
+    to: '/layanan/legal-advisor-on-demand',
+    icon: <Icon className="w-6 h-6" aria-hidden="true"><circle cx="9" cy="8" r="4" /><path d="M2 21v-1a6 6 0 0 1 12 0v1" /><circle cx="17" cy="9" r="3" /><path d="M16 15a5 5 0 0 1 6 5v1" /></Icon>,
+  },
+  {
+    title: 'Pemantauan Kepatuhan',
+    text: 'Ingatkan kewajiban dan perubahan regulasi',
+    onClick: () => askHumi('Kewajiban hukum apa saja yang harus rutin saya penuhi sebagai pemilik usaha, dan kapan tenggatnya?'),
+    icon: <Icon className="w-6 h-6" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></Icon>,
+  },
+];
+
+const FeatureStrip: React.FC = () => (
+  <section aria-label="Fitur HalloHukum" className="border-y border-hh-line bg-white">
+    <ul className="container mx-auto grid grid-cols-1 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-5 lg:px-8">
+      {features.map((feature) => {
+        const body = (
+          <>
+            <span className={featureIcon}>{feature.icon}</span>
+            <span className="mt-4 block font-bold text-hh-navy">{feature.title}</span>
+            <span className="mt-1 block text-sm leading-relaxed text-hh-mute">{feature.text}</span>
+          </>
+        );
+        const cls = 'flex h-full w-full flex-col items-start py-7 text-left transition-colors hover:[&_span:nth-child(2)]:text-hh-indigo lg:px-6';
+        return (
+          <li key={feature.title} className="border-b border-hh-line last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-l lg:first:border-l-0 lg:[&:first-child>*]:pl-0">
+            {feature.to
+              ? <Link to={feature.to} className={cls}>{body}</Link>
+              : <button onClick={feature.onClick} className={cls}>{body}</button>}
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+);
+
+const stages = [
+  {
+    title: 'Memulai Usaha',
+    text: 'Tentukan bentuk usaha, urus legalitas, dan siapkan dokumen dasar.',
+    to: '/layanan/legalitas-usaha',
+    icon: <Icon className="w-7 h-7 text-emerald-600" aria-hidden="true"><path d="M12 22V11" /><path d="M12 11C12 7 9 4 4 4c0 4 3 7 8 7z" /><path d="M12 13c0-4 3-7 8-7 0 4-3 7-8 7z" /></Icon>,
+  },
+  {
+    title: 'Menjalankan Usaha',
+    text: 'Penuhi kewajiban hukum, kelola kontrak, dan kurangi risiko.',
+    to: '/layanan/pembuatan-kontrak',
+    icon: <Icon className="w-7 h-7 text-hh-indigo" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></Icon>,
+  },
+  {
+    title: 'Mengembangkan Usaha',
+    text: 'Lindungi merek, jaga kepatuhan, dan dapatkan dukungan hukum lanjutan.',
+    to: '/layanan/kekayaan-intelektual',
+    icon: <Icon className="w-7 h-7 text-hh-indigo" aria-hidden="true"><rect x="3" y="14" width="4" height="7" rx="1" /><rect x="10" y="9" width="4" height="12" rx="1" /><rect x="17" y="3" width="4" height="18" rx="1" /></Icon>,
+  },
+];
+
+const Stages: React.FC = () => (
+  <section className="bg-white py-16 sm:py-20">
+    <div className="container mx-auto grid items-center gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)] lg:gap-12 lg:px-8">
+      <div>
+        <h2 className="font-sans text-3xl font-[800] leading-[1.12] tracking-[-0.02em] text-hh-navy sm:text-[2.2rem]">Solusi Hukum untuk Setiap Tahap Usaha</h2>
+        <p className="mt-4 leading-relaxed text-hh-ink-2">Dari memulai, menjalankan, hingga mengembangkan usaha, HalloHukum siap mendampingi Anda.</p>
+      </div>
+      <ol className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-stretch md:gap-3">
+        {stages.map((stage, i) => (
+          <React.Fragment key={stage.title}>
+            {i > 0 && (
+              <li aria-hidden="true" className="hidden items-center justify-center text-hh-navy md:flex">
+                <Icon className="w-5 h-5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></Icon>
+              </li>
+            )}
+            <li>
+              <Link
+                to={stage.to}
+                className="flex h-full flex-col rounded-xl border border-hh-line bg-white p-5 shadow-hh-1 transition hover:border-hh-indigo/40 hover:shadow-hh-2"
+              >
+                {stage.icon}
+                <span className="mt-3 font-bold text-hh-navy">{stage.title}</span>
+                <span className="mt-1 text-sm leading-relaxed text-hh-ink-2">{stage.text}</span>
+              </Link>
+            </li>
+          </React.Fragment>
+        ))}
+      </ol>
+    </div>
+  </section>
+);
+
 const HomePage: React.FC = () => {
   return (
     <>
       <Hero />
+      <FeatureStrip />
+      <Stages />
 
       {/* Common questions: each one opens HUMI with the question filled in */}
       <section aria-labelledby="topics-title" className="bg-hh-soft border-y border-hh-line py-8">
@@ -225,7 +340,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* How it works */}
-      <section className="py-16 sm:py-20 lg:py-28 bg-hh-navy text-white">
+      <section id="cara-kerja" className="scroll-mt-20 py-16 sm:py-20 lg:py-28 bg-hh-navy text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="max-w-2xl">
             <h2 className="text-3xl sm:text-[2.6rem] font-normal leading-[1.1] tracking-[-0.02em]">Dari pertanyaan pertama sampai dokumen di tangan</h2>
